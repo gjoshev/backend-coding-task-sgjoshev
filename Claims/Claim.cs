@@ -6,14 +6,13 @@ namespace Claims
     public class Claim
     {
         [BsonId]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [BsonElement("coverId")]
         public string CoverId { get; set; }
 
-        [BsonElement("created")]
-        [BsonDateTimeOptions(DateOnly = true)]
-        public DateTime Created { get; set; }
+    [BsonElement("created")]
+    public DateOnly Created { get; set; }
 
         [BsonElement("name")]
         public string Name { get; set; }

@@ -1,25 +1,41 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using System.Net.Http.Json;
 using Xunit;
 
-namespace Claims.Tests
+namespace Claims.Tests;
+
+/// <summary>
+/// Integration tests for the Claims API endpoint.
+/// </summary>
+public class ClaimsControllerTests
 {
-    public class ClaimsControllerTests
+    [Fact]
+    public async Task Get_Claims_ReturnsOk()
     {
-        [Fact]
-        public async Task Get_Claims()
-        {
-            var application = new WebApplicationFactory<Program>()
-                .WithWebHostBuilder(_ =>
-                {});
+        var application = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(_ => { });
 
-            var client = application.CreateClient();
+        var client = application.CreateClient();
 
-            var response = await client.GetAsync("/Claims");
+        var response = await client.GetAsync("/Claims");
 
-            response.EnsureSuccessStatusCode();
+        response.EnsureSuccessStatusCode();
+        var claims = await response.Content.ReadFromJsonAsync<List<Claim>>();
+        Assert.NotNull(claims);
+        Assert.Empty(claims);
+    }
 
-            //TODO: Apart from ensuring 200 OK being returned, what else can be asserted?
-        }
+    [Fact]
+    public async Task Get_ClaimById_NotFound()
+    {
+        var application = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(_ => { });
 
+        var client = application.CreateClient();
+
+        var response = await client.GetAsync("/Claims/nonexistent-id");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

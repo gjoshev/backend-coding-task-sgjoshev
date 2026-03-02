@@ -1,9 +1,11 @@
 using Claims.Auditing;
-using Claims.Controllers;
+using Claims.Data;
+using Claims.Services;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using System.Threading.Channels;
 using Testcontainers.MongoDb;
 using Testcontainers.MsSql;
 
@@ -35,25 +37,49 @@ builder.Services
 builder.Services.AddDbContext<AuditContext>(options =>
     options.UseSqlServer(sqlContainer.GetConnectionString()));
 
-builder.Services.AddDbContext<ClaimsContext>(options =>
+builder.Services.AddDbContext<ClaimsDbContext>(options =>
 {
     var client = new MongoClient(mongoContainer.GetConnectionString());
-    var database = client.GetDatabase(builder.Configuration["MongoDb:DatabaseName"]); // Use a default/test database name
+    var database = client.GetDatabase(builder.Configuration["MongoDb:DatabaseName"]);
     options.UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName);
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Register application services
+builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
+builder.Services.AddSingleton<IAuditService, AuditService>();
+builder.Services.AddHostedService<AuditBackgroundService>();
+builder.Services.AddScoped<IClaimsService, ClaimsService>();
+builder.Services.AddScoped<ICoversService, CoversService>();
+builder.Services.AddSingleton<IPremiumCalculator, PremiumCalculator>();
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Insurance Claims API",
+        Version = "v1",
+        Description = "API for managing insurance claims and covers, including premium computation and auditing."
+    });
+
+    // Include XML comments from the project for richer Swagger docs
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Swagger is always available for local execution and debugging
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Insurance Claims API v1");
+    options.DocumentTitle = "Insurance Claims API - Swagger";
+});
 
 app.UseHttpsRedirection();
 
