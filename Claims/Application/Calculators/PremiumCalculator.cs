@@ -1,4 +1,7 @@
-namespace Claims.Services;
+using Claims.Application.Interfaces;
+using Claims.Domain.Enums;
+
+namespace Claims.Application.Calculators;
 
 /// <summary>
 /// Computes insurance cover premiums based on cover type and insurance period length.
@@ -55,18 +58,15 @@ public class PremiumCalculator : IPremiumCalculator
     {
         if (dayIndex < FirstTierDays)
         {
-            // First 30 days: no discount
             return basePremiumPerDay;
         }
 
         if (dayIndex < SecondTierDays)
         {
-            // Days 31–180: 5% discount for Yacht, 2% for others
             var discount = coverType == CoverType.Yacht ? 0.05m : 0.02m;
             return basePremiumPerDay * (1m - discount);
         }
 
-        // Days 181+: 8% discount for Yacht (5%+3%), 3% discount for others (2%+1%)
         {
             var discount = coverType == CoverType.Yacht ? 0.08m : 0.03m;
             return basePremiumPerDay * (1m - discount);

@@ -1,42 +1,43 @@
-using Claims.Data;
-using Microsoft.EntityFrameworkCore;
+using Claims.Application.Interfaces;
+using Claims.Application.Validators;
+using Claims.Domain.Auditing;
+using Claims.Domain.Entities;
+using Claims.Domain.Exceptions;
 
-namespace Claims.Services;
+namespace Claims.Application.Services;
 
 /// <summary>
 /// Service responsible for claim CRUD operations and business rule enforcement.
 /// </summary>
 public class ClaimsService : IClaimsService
 {
-    private readonly ClaimsDbContext _dbContext;
+    private readonly IClaimsRepository _claimsRepository;
+    private readonly ICoversRepository _coversRepository;
     private readonly IAuditService _auditService;
 
-    public ClaimsService(ClaimsDbContext dbContext, IAuditService auditService)
+    public ClaimsService(IClaimsRepository claimsRepository, ICoversRepository coversRepository, IAuditService auditService)
     {
-        _dbContext = dbContext;
+        _claimsRepository = claimsRepository;
+        _coversRepository = coversRepository;
         _auditService = auditService;
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<Claim>> GetAllAsync()
     {
-        return await _dbContext.Claims.ToListAsync();
+        return await _claimsRepository.GetAllAsync();
     }
 
     /// <inheritdoc />
     public async Task<Claim?> GetByIdAsync(string id)
     {
-        return await _dbContext.Claims
-            .Where(c => c.Id == id)
-            .SingleOrDefaultAsync();
+        return await _claimsRepository.GetByIdAsync(id);
     }
 
     /// <inheritdoc />
     public async Task<Claim> CreateAsync(Claim claim)
     {
-        var cover = await _dbContext.Covers
-            .Where(c => c.Id == claim.CoverId)
-            .SingleOrDefaultAsync();
+        var cover = await _coversRepository.GetByIdAsync(claim.CoverId);
 
         if (cover is null)
         {
@@ -50,10 +51,9 @@ public class ClaimsService : IClaimsService
         }
 
         claim.Id = Guid.NewGuid().ToString();
-        _dbContext.Claims.Add(claim);
-        await _dbContext.SaveChangesAsync();
+        await _claimsRepository.AddAsync(claim);
 
-        _auditService.EnqueueAudit(new Auditing.ClaimAudit
+        _auditService.EnqueueAudit(new ClaimAudit
         {
             ClaimId = claim.Id,
             Created = DateTime.UtcNow,
@@ -69,11 +69,10 @@ public class ClaimsService : IClaimsService
         var claim = await GetByIdAsync(id);
         if (claim is not null)
         {
-            _dbContext.Claims.Remove(claim);
-            await _dbContext.SaveChangesAsync();
+            await _claimsRepository.RemoveAsync(claim);
         }
 
-        _auditService.EnqueueAudit(new Auditing.ClaimAudit
+        _auditService.EnqueueAudit(new ClaimAudit
         {
             ClaimId = id,
             Created = DateTime.UtcNow,

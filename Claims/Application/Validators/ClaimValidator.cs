@@ -1,4 +1,7 @@
-namespace Claims.Services;
+using Claims.Domain.Entities;
+using Claims.Domain.Enums;
+
+namespace Claims.Application.Validators;
 
 /// <summary>
 /// Validates <see cref="Claim"/> entities against business rules.

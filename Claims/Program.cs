@@ -1,6 +1,8 @@
-using Claims.Auditing;
-using Claims.Data;
-using Claims.Services;
+using Claims.Application.Calculators;
+using Claims.Application.Interfaces;
+using Claims.Application.Services;
+using Claims.Infrastructure.Auditing;
+using Claims.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using System.Runtime.InteropServices;
@@ -35,7 +37,8 @@ builder.Services
     });
 
 builder.Services.AddDbContext<AuditContext>(options =>
-    options.UseSqlServer(sqlContainer.GetConnectionString()));
+    options.UseSqlServer(sqlContainer.GetConnectionString(),
+        sql => sql.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)));
 
 builder.Services.AddDbContext<ClaimsDbContext>(options =>
 {
@@ -48,6 +51,8 @@ builder.Services.AddDbContext<ClaimsDbContext>(options =>
 builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
 builder.Services.AddSingleton<IAuditService, AuditService>();
 builder.Services.AddHostedService<AuditBackgroundService>();
+builder.Services.AddScoped<IClaimsRepository, ClaimsRepository>();
+builder.Services.AddScoped<ICoversRepository, CoversRepository>();
 builder.Services.AddScoped<IClaimsService, ClaimsService>();
 builder.Services.AddScoped<ICoversService, CoversService>();
 builder.Services.AddSingleton<IPremiumCalculator, PremiumCalculator>();

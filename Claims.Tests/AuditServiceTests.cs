@@ -1,6 +1,6 @@
 using System.Threading.Channels;
-using Claims.Auditing;
-using Claims.Services;
+using Claims.Domain.Auditing;
+using Claims.Infrastructure.Auditing;
 using Xunit;
 
 namespace Claims.Tests;

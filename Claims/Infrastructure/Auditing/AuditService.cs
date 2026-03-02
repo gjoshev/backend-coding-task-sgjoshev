@@ -1,6 +1,7 @@
+using Claims.Application.Interfaces;
 using System.Threading.Channels;
 
-namespace Claims.Services;
+namespace Claims.Infrastructure.Auditing;
 
 /// <summary>
 /// In-memory audit service that enqueues audit events into a <see cref="Channel{T}"/>

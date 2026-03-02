@@ -1,7 +1,6 @@
 using System.Threading.Channels;
-using Claims.Auditing;
 
-namespace Claims.Services;
+namespace Claims.Infrastructure.Auditing;
 
 /// <summary>
 /// Background service that consumes audit events from an in-memory channel

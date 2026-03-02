@@ -1,4 +1,6 @@
-using Claims.Services;
+using Claims.Application.Validators;
+using Claims.Domain.Entities;
+using Claims.Domain.Enums;
 using Xunit;
 
 namespace Claims.Tests;

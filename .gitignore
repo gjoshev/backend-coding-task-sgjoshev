@@ -27,8 +27,6 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-# Data folder
-[Dd]ata/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -40,6 +38,7 @@ bld/
 [Bb]uild[Ll]og.*
 
 # NUNIT
+# Data folder
 *.VisualState.xml
 TestResult.xml
 

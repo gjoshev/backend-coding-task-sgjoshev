@@ -1,4 +1,6 @@
-namespace Claims.Services;
+using Claims.Domain.Enums;
+
+namespace Claims.Application.Interfaces;
 
 /// <summary>
 /// Defines the contract for computing insurance cover premiums.

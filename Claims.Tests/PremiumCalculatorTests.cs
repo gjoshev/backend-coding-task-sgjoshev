@@ -1,4 +1,5 @@
-using Claims.Services;
+using Claims.Application.Calculators;
+using Claims.Domain.Enums;
 using Xunit;
 
 namespace Claims.Tests;

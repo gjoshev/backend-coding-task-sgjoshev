@@ -1,4 +1,6 @@
-namespace Claims.Services;
+using Claims.Domain.Entities;
+
+namespace Claims.Application.Interfaces;
 
 /// <summary>
 /// Defines operations for managing insurance claims.

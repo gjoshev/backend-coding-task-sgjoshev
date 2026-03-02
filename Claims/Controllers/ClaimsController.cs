@@ -1,4 +1,6 @@
-using Claims.Services;
+using Claims.Application.Interfaces;
+using Claims.Domain.Entities;
+using Claims.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Claims.Controllers;

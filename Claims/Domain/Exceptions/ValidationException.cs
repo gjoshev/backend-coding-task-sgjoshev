@@ -1,4 +1,4 @@
-namespace Claims.Services;
+namespace Claims.Domain.Exceptions;
 
 /// <summary>
 /// Thrown when a business validation rule is violated.

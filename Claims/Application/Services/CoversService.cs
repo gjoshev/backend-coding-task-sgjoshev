@@ -1,20 +1,24 @@
-using Claims.Data;
-using Microsoft.EntityFrameworkCore;
+using Claims.Application.Interfaces;
+using Claims.Application.Validators;
+using Claims.Domain.Auditing;
+using Claims.Domain.Entities;
+using Claims.Domain.Enums;
+using Claims.Domain.Exceptions;
 
-namespace Claims.Services;
+namespace Claims.Application.Services;
 
 /// <summary>
 /// Service responsible for cover CRUD operations, validation, and premium computation.
 /// </summary>
 public class CoversService : ICoversService
 {
-    private readonly ClaimsDbContext _dbContext;
+    private readonly ICoversRepository _coversRepository;
     private readonly IAuditService _auditService;
     private readonly IPremiumCalculator _premiumCalculator;
 
-    public CoversService(ClaimsDbContext dbContext, IAuditService auditService, IPremiumCalculator premiumCalculator)
+    public CoversService(ICoversRepository coversRepository, IAuditService auditService, IPremiumCalculator premiumCalculator)
     {
-        _dbContext = dbContext;
+        _coversRepository = coversRepository;
         _auditService = auditService;
         _premiumCalculator = premiumCalculator;
     }
@@ -22,15 +26,13 @@ public class CoversService : ICoversService
     /// <inheritdoc />
     public async Task<IEnumerable<Cover>> GetAllAsync()
     {
-        return await _dbContext.Covers.ToListAsync();
+        return await _coversRepository.GetAllAsync();
     }
 
     /// <inheritdoc />
     public async Task<Cover?> GetByIdAsync(string id)
     {
-        return await _dbContext.Covers
-            .Where(c => c.Id == id)
-            .SingleOrDefaultAsync();
+        return await _coversRepository.GetByIdAsync(id);
     }
 
     /// <inheritdoc />
@@ -45,10 +47,9 @@ public class CoversService : ICoversService
         cover.Id = Guid.NewGuid().ToString();
         cover.Premium = _premiumCalculator.Compute(cover.StartDate, cover.EndDate, cover.Type);
 
-        _dbContext.Covers.Add(cover);
-        await _dbContext.SaveChangesAsync();
+        await _coversRepository.AddAsync(cover);
 
-        _auditService.EnqueueAudit(new Auditing.CoverAudit
+        _auditService.EnqueueAudit(new CoverAudit
         {
             CoverId = cover.Id,
             Created = DateTime.UtcNow,
@@ -64,11 +65,10 @@ public class CoversService : ICoversService
         var cover = await GetByIdAsync(id);
         if (cover is not null)
         {
-            _dbContext.Covers.Remove(cover);
-            await _dbContext.SaveChangesAsync();
+            await _coversRepository.RemoveAsync(cover);
         }
 
-        _auditService.EnqueueAudit(new Auditing.CoverAudit
+        _auditService.EnqueueAudit(new CoverAudit
         {
             CoverId = id,
             Created = DateTime.UtcNow,
